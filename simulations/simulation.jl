@@ -83,14 +83,25 @@ simulation = Simulation(model; Δt = 0.005, stop_iteration=10)
 # --------------------------------------------------
 # output writer
 # --------------------------------------------------
-filename = "tracer_output_AMD_closure.jld2"
+#filename = "test-release_$(string(today()))"
+filename = "tracer_output_AMD_closure"
 
 fields = Dict("T" => model.tracers.T, "S" => model.tracers.S, "c" => model.tracers.c)
 
-simulation.output_writers[:tracers] = JLD2Writer(model, fields; 
-                                                 filename,
-                                                 schedule = IterationInterval(20),
-                                                 overwrite_existing = true)
+#simulation.output_writers[:tracers] = JLD2Writer(model, fields; 
+#                                                 filename = filename * ".jld2",
+#                                                 schedule = IterationInterval(20),
+#                                                 overwrite_existing = true)
+
+simulation.output_writers[:tracers] = NetCDFOutputWriter(
+    model, fields;
+    filename = filename * ".nc",
+    schedule = IterationInterval(20),
+    #indices=(:, :, grid.Nz),
+    #with_halos = true,
+    overwrite_existing = true,
+    array_type = Array{Float32}
+)
 
 run!(simulation)
 
